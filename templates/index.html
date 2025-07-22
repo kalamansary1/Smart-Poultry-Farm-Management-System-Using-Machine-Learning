@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prediction App</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        transition: background-color 0.5s;
+      }
+      .container {
+        width: 100%;
+        max-width: 400px;
+        padding: 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      input,
+      button {
+        width: calc(100% - 20px);
+        margin: 10px 0;
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      .progress-container {
+        width: 100%;
+        background: #ddd;
+        border-radius: 5px;
+        margin-top: 10px;
+        overflow: hidden;
+      }
+      .progress-bar {
+        height: 20px;
+        width: 0;
+        background-color: #4caf50;
+        text-align: center;
+        color: white;
+        line-height: 20px;
+        transition: width 1s ease-in-out;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Predict Target Column</h2>
+      <form id="predictionForm">
+        <input type="datetime-local" id="timestamp" required /><br />
+        <input
+          type="number"
+          id="temperature"
+          placeholder="Temperature (77-79°C)"
+          min="1"
+          max="100"
+          required
+        /><br />
+        <input
+          type="number"
+          id="humidity"
+          placeholder="Humidity (1-100%)"
+          min="1"
+          max="100"
+          required
+        /><br />
+        <input
+          type="number"
+          id="air_quality"
+          placeholder="Air Quality (<= 3,500 ppm)"
+          min="1"
+          max="3500"
+          required
+        /><br />
+        <input
+          type="number"
+          id="weight"
+          placeholder="Weight (Kilogram)"
+          min="1"
+          max="10"
+          required
+        /><br />
+        <input
+          type="number"
+          id="feed_intake"
+          placeholder="Feed Intake (max 100-105 grams per day)"
+          min="1"
+          max="105"
+          required
+        /><br />
+        <button type="submit">Predict</button>
+      </form>
+      <h3>Healthiness : <span id="prediction">0</span></h3>
+      <div class="progress-container">
+        <div class="progress-bar" id="progressBar">0%</div>
+      </div>
+    </div>
+
+    <script>
+      document
+        .getElementById("predictionForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+
+          const formData = {
+            timestamp: document.getElementById("timestamp").value,
+            temperature: document.getElementById("temperature").value,
+            humidity: document.getElementById("humidity").value,
+            air_quality: document.getElementById("air_quality").value,
+            weight: document.getElementById("weight").value,
+            feed_intake: document.getElementById("feed_intake").value,
+          };
+
+          fetch("/", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams(formData).toString(),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              let predictedValue = parseFloat(data.prediction ?? 0);
+              document.getElementById("prediction").innerText =
+                predictedValue + 25;
+
+              // Change background color
+              document.body.style.backgroundColor =
+                predictedValue + 25 < 50 ? "#ff4d4d" : "#4caf50";
+
+              // Animate progress bar
+              let progressBar = document.getElementById("progressBar");
+              progressBar.style.width = predictedValue + 25 + "%";
+              progressBar.innerText = predictedValue + 25 + "%";
+            })
+            .catch((error) => console.error("Error:", error));
+        });
+    </script>
+  </body>
+</html>
